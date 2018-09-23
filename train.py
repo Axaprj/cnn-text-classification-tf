@@ -6,6 +6,7 @@ import os
 import time
 import datetime
 import data_helpers
+import flags
 from text_cnn import TextCNN
 from tensorflow.contrib import learn
 
@@ -14,11 +15,9 @@ from tensorflow.contrib import learn
 
 # Data loading params
 tf.flags.DEFINE_float("dev_sample_percentage", .1, "Percentage of the training data to use for validation")
-tf.flags.DEFINE_string("positive_data_file", "./data/rt-polaritydata/rt-polarity.pos", "Data source for the positive data.")
-tf.flags.DEFINE_string("negative_data_file", "./data/rt-polaritydata/rt-polarity.neg", "Data source for the negative data.")
 
 # Model Hyperparameters
-tf.flags.DEFINE_integer("embedding_dim", 128, "Dimensionality of character embedding (default: 128)")
+#tf.flags.DEFINE_integer("embedding_dim", 128, "Dimensionality of character embedding (default: 128)")
 tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
 tf.flags.DEFINE_integer("num_filters", 128, "Number of filters per filter size (default: 128)")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
@@ -47,12 +46,15 @@ def preprocess():
 
     # Load data
     print("Loading data...")
-    x_text, y = data_helpers.load_data_and_labels(FLAGS.positive_data_file, FLAGS.negative_data_file)
+    #x_text, y = data_helpers.load_data_and_labels(FLAGS.positive_data_file, FLAGS.negative_data_file)
 
     # Build vocabulary
-    max_document_length = max([len(x.split(" ")) for x in x_text])
-    vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
-    x = np.array(list(vocab_processor.fit_transform(x_text)))
+    #max_document_length = max([len(x.split(" ")) for x in x_text])
+    #vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
+    #x = np.array(list(vocab_processor.fit_transform(x_text)))
+    data = np.load(FLAGS.data_file)
+    x = data['x']
+    y = data['y']
 
     # Randomly shuffle data
     np.random.seed(10)
@@ -68,11 +70,13 @@ def preprocess():
 
     del x, y, x_shuffled, y_shuffled
 
-    print("Vocabulary Size: {:d}".format(len(vocab_processor.vocabulary_)))
+    #print("Vocabulary Size: {:d}".format(len(vocab_processor.vocabulary_)))
     print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
-    return x_train, y_train, vocab_processor, x_dev, y_dev
+    #return x_train, y_train, vocab_processor, x_dev, y_dev
+    return x_train, y_train, x_dev, y_dev
 
-def train(x_train, y_train, vocab_processor, x_dev, y_dev):
+#def train(x_train, y_train, vocab_processor, x_dev, y_dev):
+def train(x_train, y_train, x_dev, y_dev):
     # Training
     # ==================================================
 
@@ -85,7 +89,7 @@ def train(x_train, y_train, vocab_processor, x_dev, y_dev):
             cnn = TextCNN(
                 sequence_length=x_train.shape[1],
                 num_classes=y_train.shape[1],
-                vocab_size=len(vocab_processor.vocabulary_),
+                #vocab_size=len(vocab_processor.vocabulary_),
                 embedding_size=FLAGS.embedding_dim,
                 filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
                 num_filters=FLAGS.num_filters,
@@ -134,7 +138,7 @@ def train(x_train, y_train, vocab_processor, x_dev, y_dev):
             saver = tf.train.Saver(tf.global_variables(), max_to_keep=FLAGS.num_checkpoints)
 
             # Write vocabulary
-            vocab_processor.save(os.path.join(out_dir, "vocab"))
+            # vocab_processor.save(os.path.join(out_dir, "vocab"))
 
             # Initialize all variables
             sess.run(tf.global_variables_initializer())
@@ -189,8 +193,8 @@ def train(x_train, y_train, vocab_processor, x_dev, y_dev):
                     print("Saved model checkpoint to {}\n".format(path))
 
 def main(argv=None):
-    x_train, y_train, vocab_processor, x_dev, y_dev = preprocess()
-    train(x_train, y_train, vocab_processor, x_dev, y_dev)
+    x_train, y_train, x_dev, y_dev = preprocess()
+    train(x_train, y_train, x_dev, y_dev)
 
 if __name__ == '__main__':
     tf.app.run()
