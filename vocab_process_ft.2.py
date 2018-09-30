@@ -54,6 +54,7 @@ def preprocess():
             winx = winx + 1
         x_list.append(cur_x)
     assert len(set(w_dict)) == len(w_dict), "Words Dictionary is not unique"
+    np.savetxt(FLAGS.words_dic_file, w_dict, delimiter=',', fmt='%s')
     print("Done.")
     return np.stack(x_list), y, np.stack(v_dict)
 

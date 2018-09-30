@@ -28,7 +28,7 @@ class TextCNN(object):
             #self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
 
             self.W = tf.constant(embed_dict, name="W")
-            #self.W_ADJ = tf.Variable(np.zeros(embed_dict.shape, embed_dict.dtype), name="W_ADJ")
+            #self.W_ADJ = tf.Variable(embed_dict, name="W_ADJ")
             self.embedded_chars = tf.nn.embedding_lookup(self.W, self.input_x)
             #self.embedded_chars_adj = tf.nn.embedding_lookup(self.W_ADJ, self.input_x)
             self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
