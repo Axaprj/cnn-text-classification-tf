@@ -20,7 +20,9 @@ class TextCNN(object):
         l2_loss = tf.constant(0.0)
 
         # Embedding layer
+        #ORIG
         with tf.device('/cpu:0'), tf.name_scope("embedding"):
+        #with tf.name_scope("embedding"):
             #ORIG
             #self.W = tf.Variable(
             #    tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0), name="W")

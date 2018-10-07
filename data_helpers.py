@@ -1,6 +1,6 @@
 import numpy as np
 import re
-
+import glob
 
 def clean_str(string):
     """
@@ -30,8 +30,16 @@ def load_data_and_labels(positive_data_file, negative_data_file):
     """
     # Load data from files
     positive_examples = list(open(positive_data_file, "r", encoding='utf-8').readlines())
-    positive_examples = [s.strip() for s in positive_examples]
     negative_examples = list(open(negative_data_file, "r", encoding='utf-8').readlines())
+    return process_data_and_labels(positive_examples, negative_examples)
+
+def process_data_and_labels(positive_examples, negative_examples):
+    """
+    Loads MR polarity data from files, splits the data into words and generates labels.
+    Returns split sentences and labels.
+    """
+    # Load data from files
+    positive_examples = [s.strip() for s in positive_examples]
     negative_examples = [s.strip() for s in negative_examples]
     # Split by words
     x_text = positive_examples + negative_examples
@@ -42,6 +50,15 @@ def load_data_and_labels(positive_data_file, negative_data_file):
     y = np.concatenate([positive_labels, negative_labels], 0)
     return [x_text, y]
 
+def load_data_dirs(data_dir):
+    """
+    Loads data from dirs.
+    """
+    lns = []
+    for file in glob.glob(data_dir):
+        lines = list(open(file, "r", encoding='utf-8').readlines())
+        lns.append(' '.join([l.strip(' \t\n\r') for l in lines]))
+    return lns
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):
     """

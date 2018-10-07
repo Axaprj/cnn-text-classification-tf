@@ -10,6 +10,7 @@ import subprocess
 from text_cnn import TextCNN
 from collections import OrderedDict
 import tensorflow as tf
+from threading import Thread
 
 # Parameters
 # ==================================================
@@ -22,8 +23,12 @@ def preprocess():
 
     # Load data
     print("Loading data...")
-    x_text, y = data_helpers.load_data_and_labels(FLAGS.positive_data_file,
-                                                  FLAGS.negative_data_file)
+    #    x_text, y = data_helpers.load_data_and_labels(FLAGS.positive_data_file,
+    #                                                  FLAGS.negative_data_file)
+    pos_lns = data_helpers.load_data_dirs(FLAGS.positive_data_file)
+    neg_lns = data_helpers.load_data_dirs(FLAGS.negative_data_file)
+    x_text, y = data_helpers.process_data_and_labels(pos_lns, neg_lns)
+
     # Build vocabulary
     max_document_length = max([len(x.split(" ")) for x in x_text])
     print("Max Document length: %s" % max_document_length)
@@ -32,6 +37,7 @@ def preprocess():
     p = subprocess.Popen([
         dir_path + "fasttext", "print-word-vectors", dir_path + "cc.en.300.bin"
     ],
+                         bufsize=1,
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
@@ -44,8 +50,8 @@ def preprocess():
         cur_w2v = GetFasttextArr(p, xt)
         winx = 0
         for w2v in cur_w2v:
-            w = w2v[0] 
-            v = w2v[1] 
+            w = w2v[0]
+            v = w2v[1]
             try:
                 cinx = w_dict.index(w)
                 cur_x[winx] = cinx
@@ -58,14 +64,23 @@ def preprocess():
             winx = winx + 1
         x_list.append(cur_x)
     assert len(set(w_dict)) == len(w_dict), "Words Dictionary is not unique"
-    np.savetxt(FLAGS.words_dic_file, np.transpose([w_dict, w_freq]), delimiter=',', fmt='%s')
+    np.savetxt(
+        FLAGS.words_dic_file,
+        np.transpose([w_dict, w_freq]),
+        delimiter=',',
+        fmt='%s')
     print("Done.")
     return np.stack(x_list), y, np.stack(v_dict)
 
+def pump_input(pipe, lines):
+    pipe.write(lines)
+    pipe.flush()
 
 def GetFasttextArr(proc_ft, in_str):
-    proc_ft.stdin.write((in_str + ' <%EOL%>\n').encode('utf-8'))
-    proc_ft.stdin.flush()
+    in_str_b = (in_str + ' <%EOL%>\n').encode('utf-8')
+    Thread(target=pump_input, args=[proc_ft.stdin, in_str_b]).start()
+    #proc_ft.stdin.write(instr)
+    #proc_ft.stdin.flush()
     is_eol = False
     w2v = []
     while not is_eol:
@@ -82,9 +97,8 @@ def GetFasttextArr(proc_ft, in_str):
 
 def main(argv=None):
     x, y, embed_dict = preprocess()
-    print(
-        "Counts: x(rows, seg_max)=%s; y(rows, cols)=%s; embed_dict=%s"
-        % (x.shape, y.shape, embed_dict.shape))
+    print("Counts: x(rows, seg_max)=%s; y(rows, cols)=%s; embed_dict=%s" %
+          (x.shape, y.shape, embed_dict.shape))
     np.savez(FLAGS.data_file, x=x, y=y, embed_dict=embed_dict)
 
 
