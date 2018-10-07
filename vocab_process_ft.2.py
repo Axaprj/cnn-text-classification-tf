@@ -38,6 +38,7 @@ def preprocess():
     x_list = []
     v_dict = [np.zeros((FLAGS.embedding_dim), dtype=np.float32)]
     w_dict = ["<%NONE%>"]
+    w_freq = [0]
     for xt in x_text:
         cur_x = np.zeros((max_document_length), dtype=np.int)
         cur_w2v = GetFasttextArr(p, xt)
@@ -46,15 +47,18 @@ def preprocess():
             w = w2v[0] 
             v = w2v[1] 
             try:
-                cur_x[winx] = w_dict.index(w)
+                cinx = w_dict.index(w)
+                cur_x[winx] = cinx
+                w_freq[cinx] = w_freq[cinx] + 1
             except ValueError:
                 w_dict.append(w)
                 v_dict.append(v)
+                w_freq.append(1)
                 cur_x[winx] = len(w_dict) - 1
             winx = winx + 1
         x_list.append(cur_x)
     assert len(set(w_dict)) == len(w_dict), "Words Dictionary is not unique"
-    np.savetxt(FLAGS.words_dic_file, w_dict, delimiter=',', fmt='%s')
+    np.savetxt(FLAGS.words_dic_file, np.transpose([w_dict, w_freq]), delimiter=',', fmt='%s')
     print("Done.")
     return np.stack(x_list), y, np.stack(v_dict)
 
