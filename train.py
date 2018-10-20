@@ -100,8 +100,8 @@ def train(x_all, y_all, embed_dict):
         session_conf = tf.ConfigProto(
             allow_soft_placement=FLAGS.allow_soft_placement,
             log_device_placement=FLAGS.log_device_placement)
-        sess = tf.Session(config=session_conf)
-        with sess.as_default():
+        with tf.Session(config=session_conf) as sess:
+            sess.as_default()
             cnn = TextCNN(
                 sequence_length=x_all.shape[1],
                 num_classes=y_all.shape[1],

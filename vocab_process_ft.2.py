@@ -18,19 +18,28 @@ FLAGS = tf.flags.FLAGS
 
 
 def preprocess():
+    print("\nParameters:")
+    fdict = tf.app.flags.FLAGS.flag_values_dict()
+    for attr in sorted(fdict):
+        print("{}={}".format(attr.upper(), fdict[attr]))
+    print("")
     # Data Preparation
     # ==================================================
-
     # Load data
     print("Loading data...")
     #    x_text, y = data_helpers.load_data_and_labels(FLAGS.positive_data_file,
     #                                                  FLAGS.negative_data_file)
-    pos_lns = data_helpers.load_data_dirs(FLAGS.positive_data_file)
-    neg_lns = data_helpers.load_data_dirs(FLAGS.negative_data_file)
+    pos_lns = data_helpers.load_data_dirs(FLAGS.positive_data_dir)
+    neg_lns = data_helpers.load_data_dirs(FLAGS.negative_data_dir)
     x_text, y = data_helpers.process_data_and_labels(pos_lns, neg_lns)
 
     # Build vocabulary
     max_document_length = max([len(x.split(" ")) for x in x_text])
+    if FLAGS.max_document_length < max_document_length:
+        raise ValueError("max_document_length: (FLAGS) %s < (actual) %s" %
+                         (FLAGS.max_document_length, max_document_length))
+    max_document_length = FLAGS.max_document_length
+
     print("Max Document length: %s" % max_document_length)
     dir_path = os.path.dirname(os.path.realpath(__file__)) + "\\fasttext\\"
     print("FastText path: " + dir_path)
@@ -68,13 +77,15 @@ def preprocess():
         FLAGS.words_dic_file,
         np.transpose([w_dict, w_freq]),
         delimiter=',',
-        fmt='%s')
+        fmt='"%s"')
     print("Done.")
     return np.stack(x_list), y, np.stack(v_dict)
+
 
 def pump_input(pipe, lines):
     pipe.write(lines)
     pipe.flush()
+
 
 def GetFasttextArr(proc_ft, in_str):
     in_str_b = (in_str + ' <%EOL%>\n').encode('utf-8')
@@ -95,7 +106,7 @@ def GetFasttextArr(proc_ft, in_str):
     return w2v
 
 
-def main(argv=None):
+def main(_):
     x, y, embed_dict = preprocess()
     print("Counts: x(rows, seg_max)=%s; y(rows, cols)=%s; embed_dict=%s" %
           (x.shape, y.shape, embed_dict.shape))
@@ -103,4 +114,4 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
-    main()
+    tf.app.run()
