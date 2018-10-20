@@ -47,13 +47,11 @@ tf.flags.DEFINE_boolean("log_device_placement", False,
                         "Log placement of ops on devices")
 
 FLAGS = tf.flags.FLAGS
-
-# FLAGS._parse_flags()
-# print("\nParameters:")
-# for attr, value in sorted(FLAGS.__flags.items()):
-#     print("{}={}".format(attr.upper(), value))
-# print("")
-
+print("\nParameters:")
+fdict = tf.app.flags.FLAGS.flag_values_dict()
+for attr in sorted(fdict):
+    print("{}={}".format(attr.upper(), fdict[attr]))
+print("")
 
 def preprocess():
     # Data Preparation
