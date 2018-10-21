@@ -47,7 +47,7 @@ def main(_):
     data = np.load(FLAGS.data_file)
     x_test = data['x']
     y_test = data['y']
-    #embed_dict = data['embed_dict']
+    embed_dict = data['embed_dict']
     y_test = np.argmax(y_test, axis=1)
 
 
@@ -75,6 +75,8 @@ def main(_):
 
             # Get the placeholders from the graph by name
             input_x = graph.get_operation_by_name("input_x").outputs[0]
+            W = graph.get_operation_by_name("W").outputs[0]
+
             # input_y = graph.get_operation_by_name("input_y").outputs[0]
             dropout_keep_prob = graph.get_operation_by_name(
                 "dropout_keep_prob").outputs[0]
@@ -93,6 +95,7 @@ def main(_):
             for x_test_batch in batches:
                 batch_predictions = sess.run(predictions, {
                     input_x: x_test_batch,
+                    W: embed_dict,
                     dropout_keep_prob: 1.0
                 })
                 all_predictions = np.concatenate(

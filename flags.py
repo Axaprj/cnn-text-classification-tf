@@ -8,21 +8,29 @@ import tensorflow as tf
 #tf.flags.DEFINE_string("negative_data_file", "./data/rt-polaritydata/rt-polarity.neg", "Data source for the negative data.")
 tf.flags.DEFINE_string(
     "negative_data_dir",
-    "./../data.arc/aclImdb/test/neg/*.txt",  #"./../data.arc/aclImdb/train/neg/*.txt",
+    #"./../data.arc/aclImdb/test/neg/*.txt",  
+    "./../data.arc/aclImdb/train/neg/*.txt",
     "Data source dir/mask for the negative data.")
 tf.flags.DEFINE_string(
     "positive_data_dir",
-    "./../data.arc/aclImdb/test/pos/*.txt",  #"./../data.arc/aclImdb/train/pos/*.txt",
+    #"./../data.arc/aclImdb/test/pos/*.txt",  
+    "./../data.arc/aclImdb/train/pos/*.txt",
     "Data source dir/mask for the positive data.")
+
+tf.flags.DEFINE_string(
+    "out_dir_name", "aclImdb",
+    "Output model directory name (default: timestamp)")
 
 # Calculation data storage params
 tf.flags.DEFINE_string(
     "words_dic_file",
-    "./data/aclimdb_words_dict_test.csv",  #"./data/aclimdb_words_dict.csv",
+    #"./data/aclimdb_words_dict_test.csv", 
+    "./data/aclimdb_words_dict.csv",
     "Ordered words dictionary")
 tf.flags.DEFINE_string(
     "data_file",
-    "./data/aclimdb_data_file_test.npz",  #"./data/aclimdb_data_file.npz",
+    #"./data/aclimdb_data_file_test.npz",  
+    "./data/aclimdb_data_file.npz",
     "data[x] data[y] data[embed_dict] vectors")
 
 # Model Hyperparameters

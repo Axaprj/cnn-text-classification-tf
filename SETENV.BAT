@@ -1,4 +1,4 @@
 SET PY_ROOT=D:\IntelPython3
-SET TLOG=1539627208
+SET TLOG=aclImdb
 
 

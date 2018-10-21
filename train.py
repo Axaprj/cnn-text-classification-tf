@@ -53,6 +53,7 @@ for attr in sorted(fdict):
     print("{}={}".format(attr.upper(), fdict[attr]))
 print("")
 
+
 def preprocess():
     # Data Preparation
     # ==================================================
@@ -102,11 +103,10 @@ def train(x_all, y_all, embed_dict):
             log_device_placement=FLAGS.log_device_placement)
         with tf.Session(config=session_conf) as sess:
             sess.as_default()
+            # embed_dict= embed_dict,  #vocab_size=len(vocab_processor.vocabulary_),
             cnn = TextCNN(
                 sequence_length=x_all.shape[1],
-                num_classes=y_all.shape[1],
-                embed_dict=
-                embed_dict,  #vocab_size=len(vocab_processor.vocabulary_),
+                num_classes=y_all.shape[1],  
                 embedding_size=FLAGS.embedding_dim,
                 filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
                 num_filters=FLAGS.num_filters,
@@ -133,7 +133,10 @@ def train(x_all, y_all, embed_dict):
             grad_summaries_merged = tf.summary.merge(grad_summaries)
 
             # Output directory for models and summaries
-            timestamp = str(int(time.time()))
+            #timestamp = str(int(time.time()))
+            timestamp = FLAGS.out_dir_name
+            if len(timestamp) == 0:
+                timestamp = str(int(time.time()))
             out_dir = os.path.abspath(
                 os.path.join(os.path.curdir, "runs", timestamp))
             print("Writing to {}\n".format(out_dir))
@@ -170,13 +173,14 @@ def train(x_all, y_all, embed_dict):
             # Initialize all variables
             sess.run(tf.global_variables_initializer())
 
-            def train_step(x_batch, y_batch):
+            def train_step(x_batch, y_batch, embed_dict):
                 """
                 A single training step
                 """
                 feed_dict = {
                     cnn.input_x: x_batch,
                     cnn.input_y: y_batch,
+                    cnn.W: embed_dict,
                     cnn.dropout_keep_prob: FLAGS.dropout_keep_prob
                 }
                 _, step, summaries, loss, accuracy = sess.run([
@@ -188,13 +192,14 @@ def train(x_all, y_all, embed_dict):
                     time_str, step, loss, accuracy))
                 train_summary_writer.add_summary(summaries, step)
 
-            def dev_step(x_batch, y_batch, writer=None):
+            def dev_step(x_batch, y_batch, embed_dict,  writer=None):
                 """
                 Evaluates model on a dev set
                 """
                 feed_dict = {
                     cnn.input_x: x_batch,
                     cnn.input_y: y_batch,
+                    cnn.W: embed_dict,
                     cnn.dropout_keep_prob: 1.0
                 }
                 step, summaries, loss, accuracy = sess.run(
@@ -211,7 +216,7 @@ def train(x_all, y_all, embed_dict):
                 len(y_all) / (len(y_all) * FLAGS.dev_sample_percentage))
             num_epochs = max((int)(FLAGS.num_epochs / split_size), 1)
             print("\nCross-Validation calculation: split_size=%s num_epochs=%s"
-                  % (split_size, num_epochs*split_size))
+                  % (split_size, num_epochs * split_size))
             kf = KFold(n_splits=split_size, shuffle=True)
             for train_idx, dev_idx in kf.split(x_all, y_all):
                 x_train = x_all[train_idx]
@@ -224,11 +229,11 @@ def train(x_all, y_all, embed_dict):
                 # Training loop. For each batch...
                 for batch in batches:
                     x_batch, y_batch = zip(*batch)
-                    train_step(x_batch, y_batch)
+                    train_step(x_batch, y_batch, embed_dict)
                     current_step = tf.train.global_step(sess, global_step)
                     if current_step % FLAGS.evaluate_every == 0:
                         print("\nEvaluation:")
-                        dev_step(x_dev, y_dev, writer=dev_summary_writer)
+                        dev_step(x_dev, y_dev, embed_dict, writer=dev_summary_writer)
                         print("")
                     if current_step % FLAGS.checkpoint_every == 0:
                         path = saver.save(
@@ -239,7 +244,6 @@ def train(x_all, y_all, embed_dict):
 def main(argv=None):
     x, y, embed_dict = preprocess()
     train(x, y, embed_dict)
-
 
 if __name__ == '__main__':
     tf.app.run()
