@@ -14,6 +14,24 @@ from threading import Thread
 
 # Parameters
 # ==================================================
+tf.flags.DEFINE_string(
+    "negative_data_dir",
+    #"./../data.arc/aclImdb/test/neg/*.txt",  
+    "./../data.arc/aclImdb/train/neg/*.txt",
+    "Data source dir/mask for the negative data.")
+tf.flags.DEFINE_string(
+    "positive_data_dir",
+    #"./../data.arc/aclImdb/test/pos/*.txt",  
+    "./../data.arc/aclImdb/train/pos/*.txt",
+    "Data source dir/mask for the positive data.")
+
+# Calculation data storage params
+tf.flags.DEFINE_string(
+    "words_dic_file",
+    #"./data/aclimdb_words_dict_test.csv", 
+    "./data/aclimdb_words_dict.csv",
+    "Ordered words dictionary")
+    
 FLAGS = tf.flags.FLAGS
 
 
