@@ -17,7 +17,6 @@ import csv
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_string("checkpoint_dir", "",
                        "Checkpoint directory from training run")
-tf.flags.DEFINE_boolean("eval_train", False, "Evaluate on all training data")
 
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True,
@@ -44,7 +43,7 @@ def main(_):
     #    x_raw = ["a masterpiece four years in the making", "everything is off."]
     #    y_test = [1, 0]
 
-    data = np.load(FLAGS.data_file)
+    data = np.load(FLAGS.data_file_test)
     x_test = data['x']
     y_test = data['y']
     embed_dict = data['embed_dict']

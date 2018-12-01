@@ -13,6 +13,11 @@ tf.flags.DEFINE_string(
     "./data/aclimdb_data_file.npz",
     "data[x] data[y] data[embed_dict] vectors")
 
+tf.flags.DEFINE_string(
+    "data_file_test",
+    "./data/aclimdb_data_file_test.npz",  
+    "data[x] data[y] data[embed_dict] vectors")
+
 # Model Parameters
 tf.flags.DEFINE_string(
     "out_dir_name", "aclImdb",
