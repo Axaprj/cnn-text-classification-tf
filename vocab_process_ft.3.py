@@ -15,7 +15,7 @@ import sqlite3
 
 # Parameters
 # ==================================================
-tf.flags.DEFINE_string("data_src_dbf", "./../data.arc/AclImdb_proc.db",
+tf.flags.DEFINE_string("data_src_dbf", "c:/data.arc/AclImdb_proc.db",
                        "Dict and Src[x, y] vectors sqlite database file")
 
 FLAGS = tf.flags.FLAGS
